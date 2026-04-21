@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Positive vs. Negative Areas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #2c3e50; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        header { text-align: center; padding: 30px 20px 10px; }
+        h1 { font-size: 2.2rem; margin-bottom: 5px; color: #1a252f; }
+        p.subtitle { font-size: 1.1rem; color: #555; max-width: 600px; margin: 0 auto; }
+        .container {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 15px;
+            text-align: center; width: 90%; max-width: 800px;
+        }
+        canvas {
+            background: #fdfdfd; border: 2px solid #ecf0f1;
+            border-radius: 8px; margin-bottom: 20px; max-width: 100%; height: auto;
+        }
+        .controls {
+            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 18px; font-size: 0.95rem; font-weight: bold;
+            border: none; border-radius: 6px; cursor: pointer;
+            transition: transform 0.2s; color: white;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-positive { background-color: #2ecc71; }
+        .btn-negative { background-color: #e74c3c; }
+        .btn-net { background-color: #3498db; }
+        .btn-example { background-color: #9b59b6; }
+        .btn-reset { background-color: #95a5a6; }
+        .explanation {
+            background: #ecf0f1; padding: 15px; border-radius: 8px;
+            font-size: 1.1rem; min-height: 70px; display: flex;
+            align-items: center; justify-content: center; line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Positive vs. Negative Areas</h1>
+        <p class="subtitle">Visualizing Net Area when functions cross the x-axis.</p>
+    </header>
+
+    <div class="container">
+        <canvas id="mathCanvas" width="700" height="350"></canvas>
+
+        <div class="controls">
+            <button class="btn-positive" onclick="animatePositive()">1. Show Positive Area</button>
+            <button class="btn-negative" onclick="animateNegative()">2. Show Negative Area</button>
+            <button class="btn-net" onclick="animateNet()">3. Calculate Net Area</button>
+            <button class="btn-example" onclick="showExample()">4. Show Original Example</button>
+            <button class="btn-reset" onclick="resetGraph()">Reset</button>
+        </div>
+
+        <div class="explanation" id="text-box">
+            Welcome! Click the buttons above to start the presentation.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mathCanvas');
+        const ctx = canvas.getContext('2d');
+        const textBox = document.getElementById('text-box');
+        const width = canvas.width; const height = canvas.height; const midY = height / 2;
+        let animationId; let progress = 0;
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.beginPath(); ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 2;
+            ctx.moveTo(0, midY); ctx.lineTo(width, midY); ctx.stroke(); // X-axis
+            ctx.fillStyle = '#7f8c8d'; ctx.font = '16px Arial';
+            ctx.fillText("x-axis (Zero Line)", width - 140, midY - 10);
+        }
+
+        function drawWave() {
+            ctx.beginPath(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
+            for(let x = 0; x <= width; x++) {
+                let y = midY - Math.sin((x / width) * Math.PI * 2) * 120;
+                if(x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        function fillWavePos(pct) {
+            ctx.beginPath(); ctx.fillStyle = 'rgba(46, 204, 113, 0.5)'; ctx.moveTo(0, midY);
+            for(let x = 0; x <= (width/2) * pct; x++) {
+                ctx.lineTo(x, midY - Math.sin((x / width) * Math.PI * 2) * 120);
+            }
+            ctx.lineTo((width/2) * pct, midY); ctx.fill();
+        }
+
+        function fillWaveNeg(pct) {
+            ctx.beginPath(); ctx.fillStyle = 'rgba(231, 76, 60, 0.5)'; ctx.moveTo(width/2, midY);
+            for(let x = width/2; x <= (width/2) + ((width/2) * pct); x++) {
+                ctx.lineTo(x, midY - Math.sin((x / width) * Math.PI * 2) * 120);
+            }
+            ctx.lineTo((width/2) + ((width/2) * pct), midY); ctx.fill();
+        }
+
+        function animatePositive() {
+            cancelAnimationFrame(animationId); progress = 0;
+            textBox.innerHTML = "<strong>Positive Area:</strong> The space ABOVE the line. We are accumulating positive value.";
+            function frame() {
+                progress += 0.02; drawGrid(); fillWavePos(Math.min(progress, 1)); drawWave();
+                if(progress < 1) animationId = requestAnimationFrame(frame);
+            } frame();
+        }
+
+        function animateNegative() {
+            cancelAnimationFrame(animationId); progress = 0;
+            textBox.innerHTML = "<strong>Negative Area:</strong> The space BELOW the line. We are accumulating negative value.";
+            function frame() {
+                progress += 0.02; drawGrid(); fillWavePos(1); fillWaveNeg(Math.min(progress, 1)); drawWave();
+                if(progress < 1) animationId = requestAnimationFrame(frame);
+            } frame();
+        }
+
+        function animateNet() {
+            cancelAnimationFrame(animationId); drawGrid(); fillWavePos(1); fillWaveNeg(1); drawWave();
+            ctx.fillStyle = '#27ae60'; ctx.font = 'bold 24px Arial'; ctx.fillText("+ Area", width/4 - 30, midY - 40);
+            ctx.fillStyle = '#c0392b'; ctx.fillText("- Area", (width/4)*3 - 30, midY + 50);
+            textBox.innerHTML = "<strong>Net Area:</strong> Positive + Negative. They are exactly the same size, so they cancel out! Net Area = 0.";
+        }
+
+        function showExample() {
+            cancelAnimationFrame(animationId); drawGrid();
+            
+            // Draw f(x) = 2x - 4 using a straight line
+            let startX = 100; let endX = 600; let midX = 350;
+            let startY = midY + 120; // -4
+            let endY = midY - 120;   // +4
+            
+            // Fill Negative Triangle
+            ctx.beginPath(); ctx.fillStyle = 'rgba(231, 76, 60, 0.5)';
+            ctx.moveTo(startX, midY); ctx.lineTo(midX, midY); ctx.lineTo(startX, startY); ctx.fill();
+            
+            // Fill Positive Triangle
+            ctx.beginPath(); ctx.fillStyle = 'rgba(46, 204, 113, 0.5)';
+            ctx.moveTo(midX, midY); ctx.lineTo(endX, midY); ctx.lineTo(endX, endY); ctx.fill();
+            
+            // Draw Line
+            ctx.beginPath(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
+            ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = 'black'; ctx.font = '16px Arial';
+            ctx.fillText("x = 0", startX - 15, midY - 10);
+            ctx.fillText("x = 2", midX - 15, midY - 10);
+            ctx.fillText("x = 4", endX - 15, midY + 20);
+            ctx.fillStyle = '#c0392b'; ctx.font = 'bold 20px Arial'; ctx.fillText("Area = -4", startX + 50, midY + 50);
+            ctx.fillStyle = '#27ae60'; ctx.fillText("Area = +4", midX + 50, midY - 30);
+
+            textBox.innerHTML = "<strong>Original Example: f(x) = 2x - 4</strong><br>Negative Triangle Area = -4. Positive Triangle Area = 4. Net Area = 0.";
+        }
+
+        function resetGraph() {
+            cancelAnimationFrame(animationId); drawGrid(); drawWave();
+            textBox.innerHTML = "Graph reset. Ready to present!";
+        }
+        window.onload = resetGraph;
+    </script>
+</body>
+</html>
