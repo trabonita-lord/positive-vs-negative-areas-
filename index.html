@@ -3,237 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Positive vs. Negative Areas</title>
+    <title>Math Magic: Positive vs Negative Areas</title>
     <style>
-        /* Base Setup & 3D Perspective */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+
+        :root {
+            --primary: #FF3366;
+            --secondary: #4361EE;
+            --dark: #0F172A;
+            --light: #F8FAFC;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #2c3e50; min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            overflow: hidden; /* Prevents scrollbars from parallax movement */
-            perspective: 1000px; /* Crucial for the 3D tilt effect */
+            background-color: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
-        /* Parallax Background Elements */
-        .parallax-bg {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1; pointer-events: none;
-        }
-        .parallax-element {
-            position: absolute; font-weight: bold;
-            color: rgba(255, 255, 255, 0.15); user-select: none;
+        /* Parallax Container */
+        .parallax-wrapper {
+            height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            perspective: 10px;
         }
 
-        header { text-align: center; margin-bottom: 20px; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        h1 { font-size: 2.5rem; margin-bottom: 5px; letter-spacing: 1px; }
-        p.subtitle { font-size: 1.1rem; opacity: 0.9; }
-
-        /* 3D Interactive Container */
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px; border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.5);
-            text-align: center; width: 90%; max-width: 800px;
+        section {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transform-style: preserve-3d;
-            transition: transform 0.1s ease-out; /* Smooth snapping for mouse follow */
+            z-index: -1;
+            padding: 0 10%;
         }
 
-        /* Canvas for the math animation */
-        canvas {
-            background: white; border: 2px solid #ecf0f1;
-            border-radius: 12px; margin-bottom: 20px; max-width: 100%; height: auto;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transform: translateZ(30px); /* Pops the canvas out in 3D space */
+        /* Background Graphics */
+        .bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.6;
         }
 
-        .controls {
-            display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
-            transform: translateZ(40px); /* Pops buttons out */
+        .shape1 { background: var(--primary); width: 400px; height: 400px; top: 10%; left: 10%; transform: translateZ(-5px) scale(1.5); }
+        .shape2 { background: var(--secondary); width: 500px; height: 500px; bottom: 10%; right: 5%; transform: translateZ(-10px) scale(2); }
+
+        /* Content Container */
+        .content {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 800px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease-out;
         }
 
-        button {
-            padding: 12px 20px; font-size: 0.95rem; font-weight: bold;
-            border: none; border-radius: 8px; cursor: pointer;
-            transition: all 0.2s; color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 7px 15px rgba(0,0,0,0.2); }
-        button:active { transform: translateY(0); }
-
-        .btn-positive { background-color: #2ecc71; }
-        .btn-negative { background-color: #e74c3c; }
-        .btn-net { background-color: #3498db; }
-        .btn-example { background-color: #9b59b6; }
-        .btn-reset { background-color: #34495e; }
-
-        .explanation {
-            background: #f8f9fa; padding: 20px; border-radius: 10px;
-            font-size: 1.15rem; min-height: 70px; display: flex;
-            align-items: center; justify-content: center; line-height: 1.5;
-            border-left: 5px solid #667eea;
-            transform: translateZ(20px);
+        .content.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
+        /* Typography */
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #FF3366, #FF9933);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #4361EE;
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .member-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            color: #A0AEC0;
+        }
+
+        /* Math Visuals */
+        .graph-box {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .x-axis {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: white;
+            top: 50%;
+        }
+
+        /* Animations for graphs */
+        .area-positive {
+            position: absolute;
+            background: rgba(67, 97, 238, 0.5);
+            bottom: 50%;
+            border-top-left-radius: 50px;
+            border-top-right-radius: 50px;
+            animation: growUp 2s ease-out forwards;
+        }
+
+        .area-negative {
+            position: absolute;
+            background: rgba(255, 51, 102, 0.5);
+            top: 50%;
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+            animation: growDown 2s ease-out forwards;
+        }
+
+        @keyframes growUp { from { height: 0; } to { height: 80px; width: 150px; } }
+        @keyframes growDown { from { height: 0; } to { height: 80px; width: 150px; } }
+
+        /* Scroll indicator */
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-20px) translateX(-50%); }
+            60% { transform: translateY(-10px) translateX(-50%); }
+        }
     </style>
 </head>
 <body>
 
-    <div class="parallax-bg">
-        <div class="parallax-element" data-speed="2" style="top: 10%; left: 10%; font-size: 5rem;">+</div>
-        <div class="parallax-element" data-speed="-4" style="top: 20%; left: 80%; font-size: 7rem;">∫</div>
-        <div class="parallax-element" data-speed="3" style="top: 70%; left: 15%; font-size: 4rem;">f(x)</div>
-        <div class="parallax-element" data-speed="-2" style="top: 80%; left: 85%; font-size: 6rem;">-</div>
-        <div class="parallax-element" data-speed="5" style="top: 50%; left: 90%; font-size: 3rem;">=</div>
-        <div class="parallax-element" data-speed="-3" style="top: 40%; left: 5%; font-size: 4rem;">x</div>
-    </div>
+<div class="parallax-wrapper" id="scroll-container">
+    <div class="bg-shape shape1"></div>
+    <div class="bg-shape shape2"></div>
 
-    <header>
-        <h1>Positive vs. Negative Areas</h1>
-        <p class="subtitle">Visualizing Net Area when functions cross the zero line.</p>
-    </header>
-
-    <div class="container" id="presentationCard">
-        <canvas id="mathCanvas" width="700" height="350"></canvas>
-
-        <div class="controls">
-            <button class="btn-positive" onclick="animatePositive()">1. Positive Area</button>
-            <button class="btn-negative" onclick="animateNegative()">2. Negative Area</button>
-            <button class="btn-net" onclick="animateNet()">3. Net Area</button>
-            <button class="btn-example" onclick="showExample()">4. Original Example</button>
-            <button class="btn-reset" onclick="resetGraph()">Reset</button>
+    <!-- Member 1: Intro -->
+    <section>
+        <div class="content">
+            <div class="member-badge">Member 1 (0:00 - 1:00)</div>
+            <h1>Positive vs Negative Area</h1>
+            <p>Hello everyone! Today we will learn about finding the area under a curve. In geometry, area is always positive. But in Calculus, area has a direction!</p>
+            <div class="graph-box">
+                <div class="x-axis"></div>
+                <div class="area-positive" style="left: 30%;"></div>
+            </div>
+            <p>When a graph is <b>above the x-axis</b>, we call it <b>Positive Area</b>. It represents adding something, like money earned or distance traveled forward.</p>
         </div>
+        <div class="scroll-down">↓ Scroll Down</div>
+    </section>
 
-        <div class="explanation" id="text-box">
-            Welcome! Move your mouse around to see the 3D effect, and click the buttons to start.
+    <!-- Member 2: The Flip Side -->
+    <section>
+        <div class="content">
+            <div class="member-badge">Member 2 (1:00 - 2:00)</div>
+            <h2>The Flip Side: Negative Area</h2>
+            <p>But what happens when the graph dips below the line?</p>
+            <div class="graph-box">
+                <div class="x-axis"></div>
+                <div class="area-negative" style="left: 30%;"></div>
+            </div>
+            <p>When the graph is <b>below the x-axis</b>, Calculus treats it as <b>Negative Area</b>. Think of this as losing money, or walking backwards. The math naturally subtracts this value.</p>
         </div>
-    </div>
+    </section>
 
-    <script>
-        /* --- PARALLAX & 3D TILT LOGIC --- */
-        const card = document.getElementById('presentationCard');
-        const parallaxElements = document.querySelectorAll('.parallax-element');
+    <!-- Member 3: Crossing the Line (Net Area) -->
+    <section>
+        <div class="content">
+            <div class="member-badge">Member 3 (2:00 - 3:00)</div>
+            <h2>Crossing the Line: Net Area</h2>
+            <p>Many graphs cross the x-axis. This gives us both positive and negative parts.</p>
+            <div class="graph-box">
+                <div class="x-axis"></div>
+                <div class="area-positive" style="left: 15%; width: 100px; height: 60px;"></div>
+                <div class="area-negative" style="left: 50%; width: 100px; height: 60px;"></div>
+            </div>
+            <p><b>Net Area</b> is what you get when you add them together. If you have +5 above the line and -3 below the line, your Net Area is just 2. They cancel each other out!</p>
+        </div>
+    </section>
 
-        document.addEventListener('mousemove', (e) => {
-            // Calculate mouse position relative to the center of the screen
-            let xAxis = (window.innerWidth / 2 - e.pageX) / 40; 
-            let yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+    <!-- Member 4: Original Example -->
+    <section>
+        <div class="content">
+            <div class="member-badge">Member 4 (3:00 - 4:00)</div>
+            <h2>An Easy Example</h2>
+            <p>Let's look at a simple straight line: <b>y = x</b> from -2 to 2.</p>
+            <div style="font-size: 1.5rem; margin: 20px 0; font-family: monospace;">
+                Area Above (0 to 2) = +2<br>
+                Area Below (-2 to 0) = -2
+            </div>
+            <p><b>Net Area calculation:</b> (+2) + (-2) = 0.</p>
+            <p>Even though there is physical space colored in, the <i>Net Area</i> is zero because the positive and negative sides are perfectly balanced!</p>
+        </div>
+    </section>
 
-            // Apply 3D tilt to the main container
-            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+    <!-- Member 5: Conclusion & Real World -->
+    <section>
+        <div class="content">
+            <div class="member-badge">Member 5 (4:00 - 5:00)</div>
+            <h2>Why Does This Matter?</h2>
+            <p>Why do we care about Net Area?</p>
+            <p>Imagine a battery charging and discharging. The positive area is power going in, the negative area is power going out. The <b>Net Area</b> tells you exactly how much power is left in the battery right now.</p>
+            <h2>Thank You!</h2>
+            <p>Understanding positive and negative areas helps us track changes in the real world perfectly.</p>
+        </div>
+    </section>
+</div>
 
-            // Move the background math symbols at different speeds
-            parallaxElements.forEach(el => {
-                let speed = el.getAttribute('data-speed');
-                let x = (window.innerWidth - e.pageX * speed) / 100;
-                let y = (window.innerHeight - e.pageY * speed) / 100;
-                el.style.transform = `translateX(${x}px) translateY(${y}px)`;
-            });
+<script>
+    // Simple Intersection Observer to trigger animations when scrolling into view
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
         });
+    }, { threshold: 0.5 });
 
-        // Reset the 3D tilt if the mouse leaves the screen
-        document.addEventListener('mouseleave', () => {
-            card.style.transform = `rotateY(0deg) rotateX(0deg)`;
-        });
+    document.querySelectorAll('.content').forEach((el) => {
+        observer.observe(el);
+    });
+</script>
 
-        /* --- MATH ANIMATION LOGIC (From previous step) --- */
-        const canvas = document.getElementById('mathCanvas');
-        const ctx = canvas.getContext('2d');
-        const textBox = document.getElementById('text-box');
-        const width = canvas.width; const height = canvas.height; const midY = height / 2;
-        let animationId; let progress = 0;
-
-        function drawGrid() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.beginPath(); ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 2;
-            ctx.moveTo(0, midY); ctx.lineTo(width, midY); ctx.stroke(); 
-            ctx.fillStyle = '#7f8c8d'; ctx.font = '16px Arial';
-            ctx.fillText("x-axis (Zero Line)", width - 140, midY - 10);
-        }
-
-        function drawWave() {
-            ctx.beginPath(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
-            for(let x = 0; x <= width; x++) {
-                let y = midY - Math.sin((x / width) * Math.PI * 2) * 120;
-                if(x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-        }
-
-        function fillWavePos(pct) {
-            ctx.beginPath(); ctx.fillStyle = 'rgba(46, 204, 113, 0.6)'; ctx.moveTo(0, midY);
-            for(let x = 0; x <= (width/2) * pct; x++) {
-                ctx.lineTo(x, midY - Math.sin((x / width) * Math.PI * 2) * 120);
-            }
-            ctx.lineTo((width/2) * pct, midY); ctx.fill();
-        }
-
-        function fillWaveNeg(pct) {
-            ctx.beginPath(); ctx.fillStyle = 'rgba(231, 76, 60, 0.6)'; ctx.moveTo(width/2, midY);
-            for(let x = width/2; x <= (width/2) + ((width/2) * pct); x++) {
-                ctx.lineTo(x, midY - Math.sin((x / width) * Math.PI * 2) * 120);
-            }
-            ctx.lineTo((width/2) + ((width/2) * pct), midY); ctx.fill();
-        }
-
-        function animatePositive() {
-            cancelAnimationFrame(animationId); progress = 0;
-            textBox.innerHTML = "<strong>Positive Area:</strong> The space ABOVE the line. We are accumulating positive value, like earning money.";
-            function frame() {
-                progress += 0.02; drawGrid(); fillWavePos(Math.min(progress, 1)); drawWave();
-                if(progress < 1) animationId = requestAnimationFrame(frame);
-            } frame();
-        }
-
-        function animateNegative() {
-            cancelAnimationFrame(animationId); progress = 0;
-            textBox.innerHTML = "<strong>Negative Area:</strong> The space BELOW the line. We are accumulating negative value, like spending money.";
-            function frame() {
-                progress += 0.02; drawGrid(); fillWavePos(1); fillWaveNeg(Math.min(progress, 1)); drawWave();
-                if(progress < 1) animationId = requestAnimationFrame(frame);
-            } frame();
-        }
-
-        function animateNet() {
-            cancelAnimationFrame(animationId); drawGrid(); fillWavePos(1); fillWaveNeg(1); drawWave();
-            ctx.fillStyle = '#27ae60'; ctx.font = 'bold 24px Arial'; ctx.fillText("+ Area", width/4 - 30, midY - 40);
-            ctx.fillStyle = '#c0392b'; ctx.fillText("- Area", (width/4)*3 - 30, midY + 50);
-            textBox.innerHTML = "<strong>Net Area:</strong> Positive Area + Negative Area.<br>They are exactly the same size, so they cancel out! Net Area = 0.";
-        }
-
-        function showExample() {
-            cancelAnimationFrame(animationId); drawGrid();
-            
-            let startX = 100; let endX = 600; let midX = 350;
-            let startY = midY + 120; let endY = midY - 120;   
-            
-            ctx.beginPath(); ctx.fillStyle = 'rgba(231, 76, 60, 0.6)';
-            ctx.moveTo(startX, midY); ctx.lineTo(midX, midY); ctx.lineTo(startX, startY); ctx.fill();
-            
-            ctx.beginPath(); ctx.fillStyle = 'rgba(46, 204, 113, 0.6)';
-            ctx.moveTo(midX, midY); ctx.lineTo(endX, midY); ctx.lineTo(endX, endY); ctx.fill();
-            
-            ctx.beginPath(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
-            ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
-
-            ctx.fillStyle = 'black'; ctx.font = '16px Arial';
-            ctx.fillText("x = 0", startX - 15, midY - 10);
-            ctx.fillText("x = 2", midX - 15, midY - 10);
-            ctx.fillText("x = 4", endX - 15, midY + 20);
-            
-            ctx.fillStyle = '#c0392b'; ctx.font = 'bold 20px Arial'; ctx.fillText("Area = -4", startX + 50, midY + 50);
-            ctx.fillStyle = '#27ae60'; ctx.fillText("Area = +4", midX + 50, midY - 30);
-
-            textBox.innerHTML = "<strong>Original Example: f(x) = 2x - 4</strong><br>Negative Triangle = -4. Positive Triangle = 4. Net Area = 0.";
-        }
-
-        function resetGraph() {
-            cancelAnimationFrame(animationId); drawGrid(); drawWave();
-            textBox.innerHTML = "Graph reset. The presentation is ready!";
-        }
-        window.onload = resetGraph;
-    </script>
 </body>
 </html>
